@@ -1,0 +1,20 @@
+[Feature]
+
+Can continuous edit
+	Append when edit
+Range select
+
+[Export]
+
+Struct
+    Auto convert between
+Clean architecture
+	Split into packages
+Inline struct add Touch, Text
+Instance and Factory
+Auto merge duplicate class
+Auto Database
+	Auto create
+    Auto content
+Abstract struct to class
+Manual start and update
