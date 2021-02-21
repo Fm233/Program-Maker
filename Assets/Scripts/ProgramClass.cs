@@ -5,12 +5,29 @@ using UnityEngine;
 public class ProgramClass : IProgram
 {
     public string className;
+    protected string overrideName = "";
+    public string insName
+    {
+        get
+        {
+            if (overrideName.Length > 0)
+            {
+                return overrideName;
+            }
+            return Util.ToSmallCamel(className);
+        }
+    }
 
-    List<ProgramInterface> interfaces = new List<ProgramInterface>();
+    protected List<ProgramInterface> interfaces = new List<ProgramInterface>();
 
     public ProgramClass(string name)
     {
         this.className = name;
+    }
+
+    public void OverrideName(string name)
+    {
+        overrideName = name;
     }
 
     public void AddInterface(ProgramInterface programInterface)
@@ -18,9 +35,9 @@ public class ProgramClass : IProgram
         interfaces.Add(programInterface);
     }
 
-    public void InitContent(ref List<string> p)
+    public virtual void InitContent(ref List<string> p)
     {
-        p.Add("public class " + className);
+        p.Add("public class " + className + " : IMB");
         p.Add("{");
         foreach (ProgramInterface programInterface in interfaces)
         {

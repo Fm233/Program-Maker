@@ -161,8 +161,10 @@
      <Compile Include="Assets\Scripts\Others\InitMan.cs" />
      <Compile Include="Assets\Scripts\Program.cs" />
      <Compile Include="Assets\Scripts\ProgramClass.cs" />
+     <Compile Include="Assets\Scripts\ProgramClassDB.cs" />
      <Compile Include="Assets\Scripts\ProgramEditorClass.cs" />
      <Compile Include="Assets\Scripts\ProgramEnum.cs" />
+     <Compile Include="Assets\Scripts\ProgramIMB.cs" />
      <Compile Include="Assets\Scripts\ProgramInterface.cs" />
      <Compile Include="Assets\Scripts\ProgramMainClass.cs" />
      <Compile Include="Assets\Scripts\ProgramSaver.cs" />

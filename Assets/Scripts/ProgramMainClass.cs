@@ -6,14 +6,14 @@ public class ProgramMainClass : IProgram
 {
     List<ProgramInterface> sendInterfaces = new List<ProgramInterface>();
     List<ProgramInterface> receiveInterfaces = new List<ProgramInterface>();
-    List<string> sendClasses = new List<string>();
-    List<string> receiveClasses = new List<string>();
-    List<string> featuredClasses = new List<string>();
+    List<ProgramClass> sendClasses = new List<ProgramClass>();
+    List<ProgramClass> receiveClasses = new List<ProgramClass>();
+    List<ProgramClass> featuredClasses = new List<ProgramClass>();
 
     public void AddConnection(ProgramInterface sendInterface,
                               ProgramInterface receiveInterface,
-                              string sendClass,
-                              string receiveClass)
+                              ProgramClass sendClass,
+                              ProgramClass receiveClass)
     {
         sendInterfaces.Add(sendInterface);
         receiveInterfaces.Add(receiveInterface);
@@ -33,18 +33,28 @@ public class ProgramMainClass : IProgram
     {
         p.Add("public class Main : MonoBehaviour");
         p.Add("{");
-        for (int i = 0; i < featuredClasses.Count; i++)
+        foreach (ProgramClass c in featuredClasses)
         {
-            string ctype = featuredClasses[i];
-            string cname = Util.ToSmallCamel(ctype);
+            string ctype = c.className;
+            string cname = c.insName;
             p.Add("    public " + ctype + " " + cname + ";");
         }
+        p.Add("    public Updater updater;");
         p.Add("    void Start()");
         p.Add("    {");
+        p.Add("        // Update");
+        foreach (ProgramClass c in featuredClasses)
+        {
+            string ctype = c.className;
+            string cname = c.insName;
+            p.Add("        updater.AddIMB(" + cname + ");");
+        }
+        p.Add("        ");
+        p.Add("        // Connect");
         for (int i = 0; i < sendInterfaces.Count; i++)
         {
-            string scname = Util.ToSmallCamel(sendClasses[i]);
-            string rcname = Util.ToSmallCamel(receiveClasses[i]);
+            string scname = sendClasses[i].insName;
+            string rcname = receiveClasses[i].insName;
             string param = Util.ToBigCamel(sendInterfaces[i].param);
             p.Add("        " + scname + "." + sendInterfaces[i].param + "Action += " + rcname + ".Receive" + param + ";");
         }

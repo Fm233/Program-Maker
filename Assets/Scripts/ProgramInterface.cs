@@ -29,4 +29,22 @@ public class ProgramInterface
             p.Add("    public Action<" + type + "> " + param + "Action { get; set; }");
         }
     }
+
+    public void AddInterfaceInformation(ref List<string> p, string[] content)
+    {
+        if (isReceiver)
+        {
+            p.Add("    public void Receive" + Util.ToBigCamel(param) + "(" + type + " " + param + ")");
+            p.Add("    {");
+            foreach (string c in content)
+            {
+                p.Add(c);
+            }
+            p.Add("    }");
+        }
+        else
+        {
+            p.Add("    public Action<" + type + "> " + param + "Action { get; set; }");
+        }
+    }
 }

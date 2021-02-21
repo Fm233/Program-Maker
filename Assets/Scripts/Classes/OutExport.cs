@@ -57,7 +57,13 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             if (element is NodeModel)
             {
                 NodeModel node = (NodeModel)element;
-                classes.Add(new ProgramClass(node.name));
+                string insName = NodeToName(node);
+                ProgramClass c = new ProgramClass(node.name);
+                if (insName != node.name)
+                {
+                    c.OverrideName(insName);
+                }
+                classes.Add(c);
             }
         }
 
@@ -136,7 +142,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                                 pc.AddInterface(sender);
                             }
                         }
-                        mainClass.AddConnection(sender, receiver, node.name, nodeEnd.name);
+                        mainClass.AddConnection(sender, receiver, GetClass(node), GetClass(nodeEnd));
                     }
                 }
                 else
@@ -159,7 +165,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                                 pc.AddInterface(receiver);
                             }
                         }
-                        mainClass.AddConnection(sender, receiver, nodeStart.name, node.name);
+                        mainClass.AddConnection(sender, receiver, GetClass(nodeStart), GetClass(node));
                     }
                 }
             }
@@ -194,7 +200,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                             pc.AddInterface(receiver);
                         }
                     }
-                    mainClass.AddConnection(sender, receiver, nodea.name, nodeb.name);
+                    mainClass.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb));
                 }
             }
         }
@@ -208,11 +214,16 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 definedStructs.Add(structs[i].structName);
             }
         }
+        List<string> savedClasses = new List<string>();
         for (int i = 0; i < classes.Count; i++)
         {
             ProgramClass pc = classes[i];
-            ProgramSaver.SaveClass("Build_" + buildCount.ToString() + "/Classes", pc);
-            editorClass.AddClass(pc.className);
+            if (!savedClasses.Contains(pc.className))
+            {
+                ProgramSaver.SaveClass("Build_" + buildCount.ToString() + "/Classes", pc);
+                editorClass.AddClass(pc.className);
+                savedClasses.Add(pc.className);
+            }
         }
         ProgramSaver.SaveMainClass("Build_" + buildCount.ToString() + "/Main", mainClass);
         ProgramSaver.SaveEditorClass("Build_" + buildCount.ToString() + "/Others", editorClass);
@@ -228,17 +239,21 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         if (end is NodeModel)
         {
             NodeModel node = (NodeModel)end;
-            string nname = node.name;
+            string nname = node.name.Split(' ')[0];
             if (nname.StartsWith("Fac"))
             {
                 string dbtype = "Ins" + nname.Substring(3);
                 if (conn.content == "Get")
                 {
-                    return "ModelGet" + dbtype + "(Action<List<" + dbtype + ">> returnAction)";
+                    return "ModelGet" + dbtype + "(Predicate<" + dbtype + "> sel, Action<List<" + dbtype + ">> ret)";
                 }
                 if (conn.content == "Crt")
                 {
-                    return "ModelCrt" + dbtype + "(" + dbtype + " instance)";
+                    return "ModelCrt" + dbtype + "(" + dbtype + " val)";
+                }
+                if (conn.content == "Del")
+                {
+                    return "ModelDel" + dbtype + "(Predicate<" + dbtype + "> sel)";
                 }
             }
             if (nname.StartsWith("DBS"))
@@ -246,19 +261,19 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 string dbtype = nname.Substring(3);
                 if (conn.content == "Get")
                 {
-                    return "ModelGet" + dbtype + "(Action<" + dbtype + "> returnAction)";
+                    return "ModelGet" + dbtype + "(Action<" + dbtype + "> ret)";
                 }
                 if (conn.content == "Set")
                 {
                     return "ModelSet" + dbtype + "(" + dbtype + " val)";
                 }
             }
-            if (nname.StartsWith("DB"))
+            else if (nname.StartsWith("DB"))
             {
                 string dbtype = nname.Substring(2);
                 if (conn.content == "Get")
                 {
-                    return "ModelGet" + dbtype + "(Predicate<" + dbtype + "> selector, Action<List<" + dbtype + ">> returnAction)";
+                    return "ModelGet" + dbtype + "(Predicate<" + dbtype + "> sel, Action<List<" + dbtype + ">> ret)";
                 }
                 if (conn.content == "Set")
                 {
@@ -266,19 +281,19 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 }
                 if (conn.content == "Mod")
                 {
-                    return "ModelMod" + dbtype + "(Predicate<" + dbtype + "> selector, Action<" + dbtype + "> modAction)";
+                    return "ModelMod" + dbtype + "(Predicate<" + dbtype + "> sel, Action<" + dbtype + "> mod)";
                 }
                 if (conn.content == "Del")
                 {
-                    return "ModelDel" + dbtype + "(Predicate<" + dbtype + "> selector)";
+                    return "ModelDel" + dbtype + "(Predicate<" + dbtype + "> sel)";
                 }
                 if (conn.content == "Crt")
                 {
-                    return "ModelCrt" + dbtype + "(" + dbtype + " instance)";
+                    return "ModelCrt" + dbtype + "(" + dbtype + " val)";
                 }
                 if (conn.content == "Fnd")
                 {
-                    return "ModelFnd" + dbtype + "(Action<List<" + dbtype + ">> returnAction)";
+                    return "ModelFnd" + dbtype + "(Action<List<" + dbtype + ">> ret)";
                 }
             }
         }
@@ -300,7 +315,8 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                         if (pluscontent.Length > 0)
                         {
                             content += pluscontent;
-                            content += ", ";    // TODO If source identical, then broken
+                            content += ", ";
+                            // TODO If source identical, then broken
                         }
                     }
                 }
@@ -422,6 +438,29 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             }
         }
         return null;
+    }
+    ProgramClass GetClass(NodeModel node)
+    {
+        foreach (ProgramClass c in classes)
+        {
+            if (c.insName == NodeToName(node))
+            {
+                return c;
+            }
+        }
+        return null;
+    }
+    string NodeToName(NodeModel node)
+    {
+        string[] split = node.name.Split(' ');
+        if (split.Length == 1)
+        {
+            return Util.ToSmallCamel(node.name);
+        }
+        else
+        {
+            return Util.ToSmallCamel(split[0]) + split[1];
+        }
     }
 
     bool ContainInDefinedStructs(string n)

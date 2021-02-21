@@ -13,8 +13,30 @@ Clean architecture
 Inline struct add Touch, Text
 Instance and Factory
 Auto merge duplicate class
+Auto Factory
+	Auto create
+	Auto content
+	Auto struct content
+	Generic
 Auto Database
 	Auto create
-    Auto content
+	Auto content
+	Auto struct content
+	Generic
 Abstract struct to class
-Manual start and update
+
+[DBF]
+
+Get(sel, ret)
+Set(vals)
+
+Mod(sel, mod)
+Del(sel)
+Crt(val)
+Fnd(ret)
+
+[FCF]
+
+Get(sel, ret)
+Crt(val)
+Del(sel)

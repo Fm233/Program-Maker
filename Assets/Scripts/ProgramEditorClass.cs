@@ -28,11 +28,14 @@ public class ProgramEditorClass : IProgram
         p.Add("        GameObject mainObject = new GameObject();");
         p.Add("        mainObject.name = \"Main\";");
         p.Add("        Main main = mainObject.AddComponent<Main>();");
+        p.Add("        GameObject updaterObject = new GameObject();");
+        p.Add("        updaterObject.name = \"Updater\";");
+        p.Add("        main.updater = updater.AddComponent<Updater>()");
         foreach (string c in featuredClasses)
         {
             string objName = Util.ToSmallCamel(c);
             p.Add("        GameObject " + objName + " = new GameObject();");
-            p.Add("        " + objName + ".name = \"" + c + " Instance\";");
+            p.Add("        " + objName + ".name = \"" + c + "\";");
             p.Add("        main." + objName + " = " + objName + ".AddComponent<" + c + ">();");
         }
         p.Add("    }");
