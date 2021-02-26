@@ -58,12 +58,12 @@ public static class ProgramSaver
         SaveProgram(root, programStruct.structName, program);
     }
 
-    public static void SaveInterface(string root, ProgramInterface programInterface)
+    public static void SaveInterface(string root, ProgramInterfaceIns programInterface)
     {
         List<string> program = new List<string>();
         AddUsings(ref program);
-        //programInterface.InitInterfaceContent(ref program);
-        //SaveProgram(root, programInterface.interfaceName, program);
+        programInterface.InitContent(ref program);
+        SaveProgram(root, programInterface.interfaceName, program);
     }
 
     static void AddUsings(ref List<string> p)

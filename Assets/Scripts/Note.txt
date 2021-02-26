@@ -6,24 +6,21 @@ Range select
 
 [Export]
 
+Auto Factory
+	Auto create
+	Generic
+Auto Database
+	Auto create
+	Generic
 Struct
     Auto convert between
 Clean architecture
 	Split into packages
-Inline struct add Touch, Text
-Instance and Factory
+All struct => class
+Model
+Instance: Connect ins sender and other receiver
 Auto merge duplicate class
-Auto Factory
-	Auto create
-	Auto content
-	Auto struct content
-	Generic
-Auto Database
-	Auto create
-	Auto content
-	Auto struct content
-	Generic
-Abstract struct to class
+
 
 [DBF]
 
@@ -38,5 +35,5 @@ Fnd(ret)
 [FCF]
 
 Get(sel, ret)
-Crt(val)
+Crt(ret)
 Del(sel)

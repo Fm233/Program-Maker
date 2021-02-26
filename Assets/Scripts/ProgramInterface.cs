@@ -15,7 +15,7 @@ public class ProgramInterface
         this.param = param;
     }
 
-    public void AddInterfaceInformation(ref List<string> p)
+    public virtual void AddInterfaceInformation(ref List<string> p)
     {
         if (isReceiver)
         {

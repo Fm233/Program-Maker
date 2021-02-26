@@ -15,7 +15,8 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             "double",
             "char",
             "bool",
-            "Vector2"
+            "Vector2",
+            "Touch"
     };
     List<IElementModel> elements;
     List<ProgramStruct> structs = new List<ProgramStruct>();
@@ -188,7 +189,14 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     sname = stype.ToLower();
 
                     ProgramInterface sender = new ProgramInterface(false, stype, sname);
-                    ProgramInterface receiver = new ProgramInterface(true, stype, sname);
+                    ProgramInterface receiver = nodeb.name.StartsWith("Ins") ?
+                                                new ProgramInterfaceIns(stype, sname) :
+                                                new ProgramInterface(true, stype, sname);
+                    if (receiver is ProgramInterfaceIns)
+                    {
+                        ProgramSaver.SaveInterface("Build_" + buildCount.ToString() + "/Interfaces",
+                                                   (ProgramInterfaceIns)receiver);
+                    }
                     foreach (ProgramClass pc in classes)
                     {
                         if (pc.className == nodea.name)
@@ -256,9 +264,9 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     return "ModelDel" + dbtype + "(Predicate<" + dbtype + "> sel)";
                 }
             }
-            if (nname.StartsWith("DBS"))
+            if (nname.StartsWith("DS"))
             {
-                string dbtype = nname.Substring(3);
+                string dbtype = nname.Substring(2);
                 if (conn.content == "Get")
                 {
                     return "ModelGet" + dbtype + "(Action<" + dbtype + "> ret)";
@@ -268,7 +276,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     return "ModelSet" + dbtype + "(" + dbtype + " val)";
                 }
             }
-            else if (nname.StartsWith("DB"))
+            if (nname.StartsWith("DB"))
             {
                 string dbtype = nname.Substring(2);
                 if (conn.content == "Get")
