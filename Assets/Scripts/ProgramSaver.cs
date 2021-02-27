@@ -66,6 +66,32 @@ public static class ProgramSaver
         SaveProgram(root, programInterface.interfaceName, program);
     }
 
+    public static void SaveEnum(string root, ProgramEnum programEnum)
+    {
+        List<string> program = new List<string>();
+        AddUsings(ref program);
+        programEnum.InitContent(ref program);
+        SaveProgram(root, programEnum.enumName, program);
+    }
+
+    public static void SaveUpdater(string root)
+    {
+        ProgramUpdater updater = new ProgramUpdater();
+        List<string> program = new List<string>();
+        AddUsings(ref program);
+        updater.InitContent(ref program);
+        SaveProgram(root, "Updater", program);
+    }
+
+    public static void SaveIMB(string root)
+    {
+        ProgramIMB imb = new ProgramIMB();
+        List<string> program = new List<string>();
+        AddUsings(ref program);
+        imb.InitContent(ref program);
+        SaveProgram(root, "IMB", program);
+    }
+
     static void AddUsings(ref List<string> p)
     {
         p.Add("using System.Collections;");

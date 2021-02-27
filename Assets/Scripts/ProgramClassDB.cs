@@ -5,15 +5,20 @@ using UnityEngine;
 
 public class ProgramClassDB : ProgramClass
 {
+    List<ProgramInterface> sendInterfaces = new List<ProgramInterface>();
+    List<ProgramInterface> receiveInterfaces = new List<ProgramInterface>();
+    List<ProgramClass> sendClasses = new List<ProgramClass>();
+    List<ProgramClass> receiveClasses = new List<ProgramClass>();
+
     public TypeDB t;
 
-    string cname
+    public string cname
     {
         get
         {
             if (t == TypeDB.FC)
             {
-                return "Ins" + className.Substring(2);
+                return "Ins" + className.Substring(3);
             }
             return className.Substring(2);
         }
@@ -22,6 +27,17 @@ public class ProgramClassDB : ProgramClass
     public ProgramClassDB(string name, TypeDB t) : base(name)
     {
         this.t = t;
+    }
+
+    public void AddConnection(ProgramInterface sendInterface,
+                              ProgramInterface receiveInterface,
+                              ProgramClass sendClass,
+                              ProgramClass receiveClass)
+    {
+        sendInterfaces.Add(sendInterface);
+        receiveInterfaces.Add(receiveInterface);
+        sendClasses.Add(sendClass);
+        receiveClasses.Add(receiveClass);
     }
 
     public override void InitContent(ref List<string> p)
@@ -39,11 +55,11 @@ public class ProgramClassDB : ProgramClass
                     List<string> content = new List<string>();
                     if (programInterface.type.Contains("Get"))
                     {
-                        content.Add("		ret(element);");
+                        content.Add("        " + programInterface.param + ".ret(element);");
                     }
                     if (programInterface.type.Contains("Set"))
                     {
-                        content.Add("		element = val;");
+                        content.Add("        element = " + programInterface.param + ".val;");
                     }
                     programInterface.AddInterfaceInformation(ref p, content.ToArray());
                 }
@@ -52,7 +68,6 @@ public class ProgramClassDB : ProgramClass
         if (t == TypeDB.DB)
         {
             p.Add("    List<" + cname + "> elements = new List<" + cname + ">();");
-            p.Add("    public GameObject prefab;");
             foreach (ProgramInterface programInterface in interfaces)
             {
                 if (programInterface.isReceiver)
@@ -61,41 +76,41 @@ public class ProgramClassDB : ProgramClass
                     List<string> content = new List<string>();
                     if (programInterface.type.Contains("Get"))
                     {
-                        content.Add("		List<" + cname + "> res = new List<" + cname + ">();");
-                        content.Add("		foreach (" + cname + " e in elements)");
-                        content.Add("       {");
-                        content.Add("			if (sel(e))");
+                        content.Add("        List<" + cname + "> res = new List<" + cname + ">();");
+                        content.Add("        foreach (" + cname + " e in elements)");
+                        content.Add("        {");
+                        content.Add("            if (" + programInterface.param + ".sel(e))");
                         content.Add("           {");
-                        content.Add("				res.Add(e);");
-                        content.Add("			}");
-                        content.Add("		}");
-                        content.Add("		ret(res);");
+                        content.Add("                res.Add(e);");
+                        content.Add("            }");
+                        content.Add("        }");
+                        content.Add("        " + programInterface.param + ".ret(res);");
                     }
                     if (programInterface.type.Contains("Set"))
                     {
-                        content.Add("		elements = vals;");
+                        content.Add("        elements = " + programInterface.param + ".vals;");
                     }
                     if (programInterface.type.Contains("Mod"))
                     {
-                        content.Add("		foreach (cname e in elements)");
-                        content.Add("		{");
-                        content.Add("			if (sel(e))");
-                        content.Add("			{");
-                        content.Add("				mod(e);");
-                        content.Add("			}");
-                        content.Add("		}");
+                        content.Add("        foreach (cname e in elements)");
+                        content.Add("        {");
+                        content.Add("            if (" + programInterface.param + ".sel(e))");
+                        content.Add("            {");
+                        content.Add("                " + programInterface.param + ".mod(e);");
+                        content.Add("            }");
+                        content.Add("        }");
                     }
                     if (programInterface.type.Contains("Del"))
                     {
-                        content.Add("		elements.RemoveAll(sel);");
+                        content.Add("        elements.RemoveAll(" + programInterface.param + ".sel);");
                     }
                     if (programInterface.type.Contains("Crt"))
                     {
-                        content.Add("		elements.Add(val);");
+                        content.Add("        elements.Add(" + programInterface.param + ".val);");
                     }
                     if (programInterface.type.Contains("Fnd"))
                     {
-                        content.Add("		ret(elements);");
+                        content.Add("        " + programInterface.param + ".ret(elements);");
                     }
                     programInterface.AddInterfaceInformation(ref p, content.ToArray());
                 }
@@ -113,38 +128,44 @@ public class ProgramClassDB : ProgramClass
                     List<string> content = new List<string>();
                     if (programInterface.type.Contains("Get"))
                     {
-                        content.Add("		List<" + cname + "> res = new List<" + cname + ">();");
-                        content.Add("		foreach (" + cname + " e in elements)");
-                        content.Add("       {");
-                        content.Add("			if (sel(e))");
+                        content.Add("        List<" + cname + "> res = new List<" + cname + ">();");
+                        content.Add("        foreach (" + cname + " e in elements)");
+                        content.Add("        {");
+                        content.Add("            if (" + programInterface.param + ".sel(e))");
                         content.Add("           {");
-                        content.Add("				res.Add(e);");
-                        content.Add("			}");
-                        content.Add("		}");
-                        content.Add("		ret(res);");
+                        content.Add("                res.Add(e);");
+                        content.Add("            }");
+                        content.Add("        }");
+                        content.Add("        " + programInterface.param + ".ret(res);");
                     }
                     if (programInterface.type.Contains("Del"))
                     {
-                        content.Add("		List<Line> toDelete = new List<Line>();");
-                        content.Add("		foreach (Line e in elements)");
-                        content.Add("		{");
-                        content.Add("			if (sel(e))");
-                        content.Add("			{");
-                        content.Add("				toDelete.Add(e);");
-                        content.Add("			}");
-                        content.Add("		}");
-                        content.Add("		foreach (Line d in toDelete)");
-                        content.Add("		{");
-                        content.Add("			elements.Remove(d);");
-                        content.Add("			d.gameObject.SetActive(false); // TODO Destroy");
-                        content.Add("		}");
+                        content.Add("        List<" + cname + "> toDelete = new List<" + cname + ">();");
+                        content.Add("        foreach (" + cname + " e in elements)");
+                        content.Add("        {");
+                        content.Add("            if (" + programInterface.param + ".sel(e))");
+                        content.Add("            {");
+                        content.Add("                toDelete.Add(e);");
+                        content.Add("            }");
+                        content.Add("        }");
+                        content.Add("        foreach (" + cname + " d in toDelete)");
+                        content.Add("        {");
+                        content.Add("            elements.Remove(d);");
+                        content.Add("            d.gameObject.SetActive(false); // TODO Destroy");
+                        content.Add("        }");
                     }
                     if (programInterface.type.Contains("Crt"))
                     {
-                        content.Add("		GameObject instance = Instantiate(prefab);");
-                        content.Add("		Line comp = instance.GetComponent<Line>();");
-                        content.Add("		elements.Add(comp);");
-                        content.Add("		ret(comp);");
+                        content.Add("        GameObject instance = Instantiate(prefab);");
+                        content.Add("        " + cname + " comp = instance.GetComponent<" + cname + ">();");
+                        content.Add("        elements.Add(comp);");
+                        for (int i = 0; i < sendInterfaces.Count; i++)
+                        {
+                            string rcname = receiveClasses[i].insName;
+                            string param = Util.ToBigCamel(sendInterfaces[i].param);
+                            content.Add("        comp." + sendInterfaces[i].param + "Action += " + rcname + ".Receive" + param + ";");
+                        }
+                        content.Add("        " + programInterface.param + ".ret(comp);");
                     }
                     programInterface.AddInterfaceInformation(ref p, content.ToArray());
                 }

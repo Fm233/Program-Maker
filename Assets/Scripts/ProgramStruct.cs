@@ -14,7 +14,11 @@ public class ProgramStruct : IProgram
 
     public void AddPair(string a, string b)
     {
-        pairs.Add(new StructPair(a, b));
+        StructPair sp = new StructPair(a, b);
+        if (!pairs.Contains(sp))
+        {
+            pairs.Add(sp);
+        }
     }
 
     public void InitContent(ref List<string> p)
@@ -23,7 +27,7 @@ public class ProgramStruct : IProgram
         p.Add("{");
         foreach (StructPair pair in pairs)
         {
-            p.Add("    public " + pair.a + " " + pair.b);
+            p.Add("    public " + pair.a + " " + pair.b + ";");
         }
         p.Add("");
         string ctor = "    public " + structName + "(";
@@ -41,7 +45,7 @@ public class ProgramStruct : IProgram
         p.Add("    {");
         foreach (StructPair pair in pairs)
         {
-            p.Add("        this." + pair.b + " = " + pair.b);
+            p.Add("        this." + pair.b + " = " + pair.b + ";");
         }
         p.Add("    }");
         p.Add("}");
@@ -57,5 +61,20 @@ public struct StructPair
     {
         this.a = a;
         this.b = b;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is StructPair pair &&
+               a == pair.a &&
+               b == pair.b;
+    }
+
+    public override int GetHashCode()
+    {
+        int hashCode = 2118541809;
+        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(a);
+        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(b);
+        return hashCode;
     }
 }

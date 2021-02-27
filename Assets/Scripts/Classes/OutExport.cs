@@ -53,18 +53,43 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         enums.Clear();
         ProgramMainClass mainClass = new ProgramMainClass();
         ProgramEditorClass editorClass = new ProgramEditorClass();
+
+        List<string> insNames = new List<string>();
         foreach (IElementModel element in elements)
         {
             if (element is NodeModel)
             {
                 NodeModel node = (NodeModel)element;
+                string className = NodeToClassName(node);
                 string insName = NodeToName(node);
-                ProgramClass c = new ProgramClass(node.name);
-                if (insName != node.name)
+
+                if (!insNames.Contains(insName))
                 {
-                    c.OverrideName(insName);
+                    bool isDB = className.StartsWith("DB") || className.StartsWith("DS") || className.StartsWith("Fac");
+                    TypeDB typeDB = TypeDB.DB;
+                    if (className.StartsWith("DS"))
+                    {
+                        typeDB = TypeDB.DS;
+                    }
+                    if (className.StartsWith("Fac"))
+                    {
+                        typeDB = TypeDB.FC;
+                    }
+
+                    ProgramClass c = isDB ? new ProgramClassDB(className, typeDB) : new ProgramClass(className);
+                    if (insName != Util.ToSmallCamel(className))
+                    {
+                        c.OverrideName(insName);
+                    }
+                    classes.Add(c);
+                    insNames.Add(insName);
+
+                    if (className.StartsWith("DB") || className.StartsWith("DS"))
+                    {
+                        ProgramStruct ps = new ProgramStruct(className.Substring(2));
+                        structs.Add(ps);
+                    }
                 }
-                classes.Add(c);
             }
         }
 
@@ -76,7 +101,6 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 // Register conns
                 List<ConnModel> ins = new List<ConnModel>();
                 List<ConnModel> outs = new List<ConnModel>();
-                List<ConnModel> all = new List<ConnModel>();
                 foreach (IElementModel e in elements)
                 {
                     if (e is ConnModel)
@@ -85,12 +109,10 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                         if (conn.connInf.start == element.GetSelectInf())
                         {
                             outs.Add(conn);
-                            all.Add(conn);
                         }
                         if (conn.connInf.end == element.GetSelectInf())
                         {
                             ins.Add(conn);
-                            all.Add(conn);
                         }
                     }
                 }
@@ -98,6 +120,15 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 // Get type and name
                 string stype = "";
                 string sname = "";
+                List<ConnModel> all = new List<ConnModel>();
+                foreach (ConnModel c in outs)
+                {
+                    all.Add(c);
+                }
+                foreach (ConnModel c in ins)
+                {
+                    all.Add(c);
+                }
                 foreach (ConnModel conn in all)
                 {
                     string content = GetConnContent(conn);
@@ -115,7 +146,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                             nodename = ((NodeModel)end).name;
                         }
                         FullParseBracket(ref stype, content, nodename);
-                        sname = stype.ToLower();
+                        sname = Util.ToSmallCamel(stype);
                         break;
                     }
                 }
@@ -185,8 +216,10 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     string content = GetConnContent(conn);
                     string stype = "";
                     string sname = "";
-                    FullParseBracket(ref stype, content, nodea.name);
-                    sname = stype.ToLower();
+                    string aname = NodeToClassName(nodea);
+                    string bname = NodeToClassName(nodeb);
+                    FullParseBracket(ref stype, content, nodea.name, nodeb.name);
+                    sname = Util.ToSmallCamel(stype);
 
                     ProgramInterface sender = new ProgramInterface(false, stype, sname);
                     ProgramInterface receiver = nodeb.name.StartsWith("Ins") ?
@@ -199,28 +232,56 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     }
                     foreach (ProgramClass pc in classes)
                     {
-                        if (pc.className == nodea.name)
+                        if (pc.className == aname)
                         {
                             pc.AddInterface(sender);
                         }
-                        if (pc.className == nodeb.name)
+                        if (pc.className == bname)
                         {
                             pc.AddInterface(receiver);
                         }
                     }
-                    mainClass.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb));
+                    bool connected = false;
+                    if (aname.StartsWith("Ins"))
+                    {
+                        foreach (ProgramClass c in classes)
+                        {
+                            if (c is ProgramClassDB)
+                            {
+                                ProgramClassDB db = (ProgramClassDB)c;
+                                if (db.cname == aname)
+                                {
+                                    db.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb));
+                                    connected = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (bname.StartsWith("Ins"))
+                    {
+                        connected = true;
+                    }
+                    if (!connected)
+                    {
+                        mainClass.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb));
+                    }
                 }
             }
         }
 
         // Save program
-        for (int i = 0; i < structs.Count; i++)
+        foreach (ProgramStruct v in structs)
         {
-            if (!ContainInDefinedStructs(structs[i].structName))
+            if (!ContainInDefinedStructs(v.structName))
             {
-                ProgramSaver.SaveStruct("Build_" + buildCount.ToString() + "/Structs", structs[i]);
-                definedStructs.Add(structs[i].structName);
+                ProgramSaver.SaveStruct("Build_" + buildCount.ToString() + "/Structs", v);
+                definedStructs.Add(v.structName);
             }
+        }
+        foreach (ProgramEnum e in enums)
+        {
+            ProgramSaver.SaveEnum("Build_" + buildCount.ToString() + "/Enums", e);
         }
         List<string> savedClasses = new List<string>();
         for (int i = 0; i < classes.Count; i++)
@@ -229,12 +290,17 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             if (!savedClasses.Contains(pc.className))
             {
                 ProgramSaver.SaveClass("Build_" + buildCount.ToString() + "/Classes", pc);
-                editorClass.AddClass(pc.className);
+                if (!pc.className.StartsWith("Ins"))
+                {
+                    editorClass.AddClass(pc.className);
+                }
                 savedClasses.Add(pc.className);
             }
         }
         ProgramSaver.SaveMainClass("Build_" + buildCount.ToString() + "/Main", mainClass);
         ProgramSaver.SaveEditorClass("Build_" + buildCount.ToString() + "/Others", editorClass);
+        ProgramSaver.SaveUpdater("Build_" + buildCount.ToString() + "/Classes");
+        ProgramSaver.SaveIMB("Build_" + buildCount.ToString() + "/Interfaces");
 
         // Change input text
         input.text = (buildCount + 1).ToString();
@@ -352,6 +418,23 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         }
     }
 
+    void FullParseBracket(ref string stype, string content, string nna, string nnb)
+    {
+        if (content.EndsWith(")"))
+        {
+            int st = content.IndexOf("(");
+            stype = content.Substring(0, st);
+            string scontwithend = content.Substring(st + 1);
+            string scont = scontwithend.Substring(0, scontwithend.Length - 1);
+            ParseBracket(stype, scont);
+        }
+        else
+        {
+            stype = "Model" + nna + "To" + nnb;
+            ParseBracket(stype, content);
+        }
+    }
+
     void ParseBracket(string name, string content)
     {
         if (content.ToUpper() == content)
@@ -367,13 +450,21 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         else
         {
             ProgramStruct s = new ProgramStruct(name);
+            foreach (ProgramStruct ps in structs)
+            {
+                if (ps.structName == name)
+                {
+                    s = ps;
+                    break;
+                }
+            }
             int level = 0;
             int bra1start = 0;
             int bra1end = 0;
             int bra1name = 0;
-            for (int i = 0; i < name.Length; i++)
+            for (int i = 0; i < content.Length; i++)
             {
-                if (name[i] == '(')
+                if (content[i] == '(')
                 {
                     if (level == 0)
                     {
@@ -381,36 +472,33 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     }
                     level++;
                 }
-                if (name[i] == ')')
+                if (content[i] == ')')
                 {
                     level--;
                     if (level == 0)
                     {
                         bra1end = i;
-                        for (int j = i; j > -1; j--)
+                        for (int j = bra1start; j > -1; j--)
                         {
-                            if (name[j] == ' ')
+                            if (content[j] == ' ')
                             {
                                 bra1name = j + 1;
+                                break;
                             }
                             if (j == 0)
                             {
                                 bra1name = 0;
                             }
                         }
-                        ParseBracket(name.Substring(bra1name, bra1start - bra1name), name.Substring(bra1start + 1, bra1end - bra1start - 1));
-                        name = name.Substring(0, bra1start) + name.Substring(bra1end + 1);
+                        ParseBracket(content.Substring(bra1name, bra1start - bra1name), content.Substring(bra1start + 1, bra1end - bra1start - 1));
+                        content = content.Substring(0, bra1start) + content.Substring(bra1end + 1);
                     }
                 }
             }
-            string[] pairs = name.Split(',');
+            string[] pairs = content.Split(',');
             for (int i = 0; i < pairs.Length; i++)
             {
-                string pair = pairs[i];
-                if (pair[0] == ' ')
-                {
-                    pair = pair.Substring(1);
-                }
+                string pair = pairs[i].Trim();
                 string[] split = pair.Split(' ');
                 if (split.Length == 1)
                 {
@@ -419,11 +507,11 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     {
                         if (t.EndsWith("[]"))
                         {
-                            s.AddPair(t, t.Substring(0, t.Length - 2).ToLower() + "s");
+                            s.AddPair(t, Util.ToSmallCamel(t.Substring(0, t.Length - 2)) + "s");
                         }
                         else
                         {
-                            s.AddPair(t, t.ToLower());
+                            s.AddPair(t, Util.ToSmallCamel(t));
                         }
                     }
                 }
@@ -468,6 +556,19 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         else
         {
             return Util.ToSmallCamel(split[0]) + split[1];
+        }
+    }
+
+    string NodeToClassName(NodeModel node)
+    {
+        string[] split = node.name.Split(' ');
+        if (split.Length == 1)
+        {
+            return node.name;
+        }
+        else
+        {
+            return split[0];
         }
     }
 

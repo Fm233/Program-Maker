@@ -5,7 +5,7 @@ using UnityEngine;
 public class ProgramEnum : IProgram
 {
     public string enumName;
-    List<string> enums;
+    List<string> enums = new List<string>();
 
     public ProgramEnum(string enumName)
     {

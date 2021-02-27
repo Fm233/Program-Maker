@@ -30,7 +30,7 @@ public class ProgramEditorClass : IProgram
         p.Add("        Main main = mainObject.AddComponent<Main>();");
         p.Add("        GameObject updaterObject = new GameObject();");
         p.Add("        updaterObject.name = \"Updater\";");
-        p.Add("        main.updater = updater.AddComponent<Updater>()");
+        p.Add("        main.updater = updater.AddComponent<Updater>();");
         foreach (string c in featuredClasses)
         {
             string objName = Util.ToSmallCamel(c);

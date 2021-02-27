@@ -16,10 +16,20 @@ Struct
     Auto convert between
 Clean architecture
 	Split into packages
-All struct => class
+
+
 Model
-Instance: Connect ins sender and other receiver
-Auto merge duplicate class
+
+DB Format
+Editor add 2+ class instances
+
+MB Assign Monitoring
+Allow edit
+Main create Class instead of MonoBehaviour
+All struct => class
+DB remove IMB
+
+
 
 
 [DBF]
