@@ -290,7 +290,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             if (!savedClasses.Contains(pc.className))
             {
                 ProgramSaver.SaveClass("Build_" + buildCount.ToString() + "/Classes", pc);
-                if (!pc.className.StartsWith("Ins"))
+                if (pc.NeedMBInstantiate())
                 {
                     editorClass.AddClass(pc.className);
                 }

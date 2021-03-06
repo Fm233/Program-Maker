@@ -8,6 +8,16 @@ public class ProgramInstance : ProgramClass
     {
     }
 
+    public override bool IsIMB()
+    {
+        return false;
+    }
+
+    public override bool NeedMBInstantiate()
+    {
+        return false;
+    }
+
     public override void InitContent(ref List<string> p)
     {
         p.Add("public class " + className + ConvertInterfaces());

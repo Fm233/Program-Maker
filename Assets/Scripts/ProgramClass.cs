@@ -25,6 +25,16 @@ public class ProgramClass : IProgram
         this.className = name;
     }
 
+    public virtual bool IsIMB()
+    {
+        return true;
+    }
+
+    public virtual bool NeedMBInstantiate()
+    {
+        return false;
+    }
+
     public void OverrideName(string name)
     {
         overrideName = name;

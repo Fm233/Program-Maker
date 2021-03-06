@@ -23,7 +23,7 @@ public class ProgramStruct : IProgram
 
     public void InitContent(ref List<string> p)
     {
-        p.Add("public struct " + structName);
+        p.Add("public class " + structName);
         p.Add("{");
         foreach (StructPair pair in pairs)
         {

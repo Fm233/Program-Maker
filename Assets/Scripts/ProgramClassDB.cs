@@ -24,6 +24,16 @@ public class ProgramClassDB : ProgramClass
         }
     }
 
+    public override bool IsIMB()
+    {
+        return false;
+    }
+
+    public override bool NeedMBInstantiate()
+    {
+        return t == TypeDB.FC;
+    }
+
     public ProgramClassDB(string name, TypeDB t) : base(name)
     {
         this.t = t;
@@ -42,10 +52,10 @@ public class ProgramClassDB : ProgramClass
 
     public override void InitContent(ref List<string> p)
     {
-        p.Add("public class " + className + " : IMB");
-        p.Add("{");
         if (t == TypeDB.DS)
         {
+            p.Add("public class " + className);
+            p.Add("{");
             p.Add("    " + cname + " element;");
             foreach (ProgramInterface programInterface in interfaces)
             {
@@ -67,6 +77,8 @@ public class ProgramClassDB : ProgramClass
         }
         if (t == TypeDB.DB)
         {
+            p.Add("public class " + className);
+            p.Add("{");
             p.Add("    List<" + cname + "> elements = new List<" + cname + ">();");
             foreach (ProgramInterface programInterface in interfaces)
             {
@@ -118,6 +130,8 @@ public class ProgramClassDB : ProgramClass
         }
         if (t == TypeDB.FC)
         {
+            p.Add("public class " + className + " : MonoBehaviour");
+            p.Add("{");
             p.Add("    List<" + cname + "> elements = new List<" + cname + ">();");
             p.Add("    public GameObject prefab;");
             foreach (ProgramInterface programInterface in interfaces)

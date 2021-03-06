@@ -45,9 +45,23 @@ public class ProgramMainClass : IProgram
         p.Add("        // Update");
         foreach (ProgramClass c in featuredClasses)
         {
-            string ctype = c.className;
-            string cname = c.insName;
-            p.Add("        updater.AddIMB(" + cname + ");");
+            if (c.IsIMB())
+            {
+                string ctype = c.className;
+                string cname = c.insName;
+                p.Add("        updater.AddIMB(" + cname + ");");
+            }
+        }
+        p.Add("        ");
+        p.Add("        // Instantiate");
+        foreach (ProgramClass c in featuredClasses)
+        {
+            if (!c.NeedMBInstantiate())
+            {
+                string ctype = c.className;
+                string cname = c.insName;
+                p.Add("        " + cname + " = new " + ctype + "();");
+            }
         }
         p.Add("        ");
         p.Add("        // Connect");

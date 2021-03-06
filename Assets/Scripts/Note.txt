@@ -25,9 +25,6 @@ Editor add 2+ class instances
 
 MB Assign Monitoring
 Allow edit
-Main create Class instead of MonoBehaviour
-All struct => class
-DB remove IMB
 
 
 
@@ -47,3 +44,5 @@ Fnd(ret)
 Get(sel, ret)
 Crt(ret)
 Del(sel)
+
+cname = new ctype();
