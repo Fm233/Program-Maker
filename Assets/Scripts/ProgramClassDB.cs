@@ -34,6 +34,11 @@ public class ProgramClassDB : ProgramClass
         return t == TypeDB.FC;
     }
 
+    public List<ProgramClass> GetReceiveClasses()
+    {
+        return receiveClasses;
+    }
+
     public ProgramClassDB(string name, TypeDB t) : base(name)
     {
         this.t = t;
@@ -102,9 +107,9 @@ public class ProgramClassDB : ProgramClass
                     {
                         content.Add("        elements = " + programInterface.param + ".vals;");
                     }
-                    if (programInterface.type.Contains("Mod"))
+                    if (programInterface.type.Substring(5).Contains("Mod"))
                     {
-                        content.Add("        foreach (cname e in elements)");
+                        content.Add("        foreach (" + cname + " e in elements)");
                         content.Add("        {");
                         content.Add("            if (" + programInterface.param + ".sel(e))");
                         content.Add("            {");
@@ -134,6 +139,10 @@ public class ProgramClassDB : ProgramClass
             p.Add("{");
             p.Add("    List<" + cname + "> elements = new List<" + cname + ">();");
             p.Add("    public GameObject prefab;");
+            foreach (ProgramClass recv in receiveClasses)
+            {
+                p.Add("    public " + recv.className + " " + recv.insName + ";");
+            }
             foreach (ProgramInterface programInterface in interfaces)
             {
                 if (programInterface.isReceiver)

@@ -42,17 +42,6 @@ public class ProgramMainClass : IProgram
         p.Add("    public Updater updater;");
         p.Add("    void Start()");
         p.Add("    {");
-        p.Add("        // Update");
-        foreach (ProgramClass c in featuredClasses)
-        {
-            if (c.IsIMB())
-            {
-                string ctype = c.className;
-                string cname = c.insName;
-                p.Add("        updater.AddIMB(" + cname + ");");
-            }
-        }
-        p.Add("        ");
         p.Add("        // Instantiate");
         foreach (ProgramClass c in featuredClasses)
         {
@@ -61,6 +50,17 @@ public class ProgramMainClass : IProgram
                 string ctype = c.className;
                 string cname = c.insName;
                 p.Add("        " + cname + " = new " + ctype + "();");
+            }
+        }
+        p.Add("        ");
+        p.Add("        // Update");
+        foreach (ProgramClass c in featuredClasses)
+        {
+            if (c.IsIMB())
+            {
+                string ctype = c.className;
+                string cname = c.insName;
+                p.Add("        updater.AddIMB(" + cname + ");");
             }
         }
         p.Add("        ");

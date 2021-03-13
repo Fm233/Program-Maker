@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
@@ -12,7 +13,7 @@ public class UICtrl : MonoBehaviour
     public void Folder()
     {
         int.TryParse(inputExport.text, out int buildCount);
-        string path = Application.persistentDataPath + "/Build_" + (buildCount - 1).ToString();
+        string path = ProgramSaver.scriptsPath;
         OpenDirectory(path);
     }
 
@@ -27,7 +28,7 @@ public class UICtrl : MonoBehaviour
     {
         Process p = new Process();
         p.StartInfo.FileName = "cmd.exe";
-        p.StartInfo.Arguments = "/c start " + obj.ToString();
+        p.StartInfo.Arguments = "/c start \"\" \"" + obj.ToString() + "\"";
         p.StartInfo.UseShellExecute = false;
         p.StartInfo.RedirectStandardInput = true;
         p.StartInfo.RedirectStandardOutput = true;

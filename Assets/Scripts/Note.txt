@@ -26,6 +26,11 @@ Editor add 2+ class instances
 MB Assign Monitoring
 Allow edit
 
+Declare var freely
+Quick Convert
+Create static class
+Non-action DB
+
 
 
 

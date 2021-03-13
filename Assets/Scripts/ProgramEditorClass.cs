@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ProgramEditorClass : IProgram
 {
-    List<string> featuredClasses = new List<string>();
-    public void AddClass(string inClass)
+    List<ProgramClass> featuredClasses = new List<ProgramClass>();
+    public void AddClass(ProgramClass inClass)
     {
         if (!featuredClasses.Contains(inClass))
         {
@@ -28,15 +28,27 @@ public class ProgramEditorClass : IProgram
         p.Add("        GameObject mainObject = new GameObject();");
         p.Add("        mainObject.name = \"Main\";");
         p.Add("        Main main = mainObject.AddComponent<Main>();");
-        p.Add("        GameObject updaterObject = new GameObject();");
-        p.Add("        updaterObject.name = \"Updater\";");
+        p.Add("        GameObject updater = new GameObject();");
+        p.Add("        updater.name = \"Updater\";");
         p.Add("        main.updater = updater.AddComponent<Updater>();");
-        foreach (string c in featuredClasses)
+        foreach (ProgramClass c in featuredClasses)
         {
-            string objName = Util.ToSmallCamel(c);
+            string objName = c.insName;
             p.Add("        GameObject " + objName + " = new GameObject();");
-            p.Add("        " + objName + ".name = \"" + c + "\";");
-            p.Add("        main." + objName + " = " + objName + ".AddComponent<" + c + ">();");
+            p.Add("        " + objName + ".name = \"" + c.className + "\";");
+            p.Add("        main." + objName + " = " + objName + ".AddComponent<" + c.className + ">();");
+            if (c is ProgramClassDB)
+            {
+                ProgramClassDB db = (ProgramClassDB)c;
+                if (db.t == TypeDB.FC)
+                {
+                    foreach (ProgramClass cls in db.GetReceiveClasses())
+                    {
+                        string clobj = cls.insName;
+                        p.Add("        main." + objName + "." + clobj + " = main." + clobj + ";");
+                    }
+                }
+            }
         }
         p.Add("    }");
         p.Add("}");

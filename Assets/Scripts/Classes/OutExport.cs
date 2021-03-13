@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
 {
+    public InputField projectDir;
     public InputField input;
     List<string> definedStructs = new List<string>()
     {
@@ -45,6 +46,10 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         // Init values
         elements = fei.models;
         RevertDefinedStructs();
+        if (projectDir.text?.Length > 0)
+        {
+            ProgramSaver.scriptsPath = projectDir.text;
+        }
         int buildCount = fei.buildCount;
 
         // Init classes
@@ -76,7 +81,19 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                         typeDB = TypeDB.FC;
                     }
 
-                    ProgramClass c = isDB ? new ProgramClassDB(className, typeDB) : new ProgramClass(className);
+                    ProgramClass c = null;
+                    if (className.StartsWith("Ins"))
+                    {
+                        c = new ProgramInstance(className);
+                    }
+                    else if (isDB)
+                    {
+                        c = new ProgramClassDB(className, typeDB);
+                    }
+                    else
+                    {
+                        c = new ProgramClass(className);
+                    }
                     if (insName != Util.ToSmallCamel(className))
                     {
                         c.OverrideName(insName);
@@ -227,7 +244,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                                                 new ProgramInterface(true, stype, sname);
                     if (receiver is ProgramInterfaceIns)
                     {
-                        ProgramSaver.SaveInterface("Build_" + buildCount.ToString() + "/Interfaces",
+                        ProgramSaver.SaveInterface("/Interfaces",
                                                    (ProgramInterfaceIns)receiver);
                     }
                     foreach (ProgramClass pc in classes)
@@ -275,13 +292,13 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
         {
             if (!ContainInDefinedStructs(v.structName))
             {
-                ProgramSaver.SaveStruct("Build_" + buildCount.ToString() + "/Structs", v);
+                ProgramSaver.SaveStruct("/Structs", v);
                 definedStructs.Add(v.structName);
             }
         }
         foreach (ProgramEnum e in enums)
         {
-            ProgramSaver.SaveEnum("Build_" + buildCount.ToString() + "/Enums", e);
+            ProgramSaver.SaveEnum("/Enums", e);
         }
         List<string> savedClasses = new List<string>();
         for (int i = 0; i < classes.Count; i++)
@@ -289,18 +306,18 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             ProgramClass pc = classes[i];
             if (!savedClasses.Contains(pc.className))
             {
-                ProgramSaver.SaveClass("Build_" + buildCount.ToString() + "/Classes", pc);
+                ProgramSaver.SaveClass("/Classes", pc);
                 if (pc.NeedMBInstantiate())
                 {
-                    editorClass.AddClass(pc.className);
+                    editorClass.AddClass(pc);
                 }
                 savedClasses.Add(pc.className);
             }
         }
-        ProgramSaver.SaveMainClass("Build_" + buildCount.ToString() + "/Main", mainClass);
-        ProgramSaver.SaveEditorClass("Build_" + buildCount.ToString() + "/Others", editorClass);
-        ProgramSaver.SaveUpdater("Build_" + buildCount.ToString() + "/Classes");
-        ProgramSaver.SaveIMB("Build_" + buildCount.ToString() + "/Interfaces");
+        ProgramSaver.SaveMainClass("/Main", mainClass);
+        ProgramSaver.SaveEditorClass("/Others", editorClass);
+        ProgramSaver.SaveUpdater("/Classes");
+        ProgramSaver.SaveIMB("/Interfaces");
 
         // Change input text
         input.text = (buildCount + 1).ToString();
@@ -323,7 +340,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 }
                 if (conn.content == "Crt")
                 {
-                    return "ModelCrt" + dbtype + "(" + dbtype + " val)";
+                    return "ModelCrt" + dbtype + "(" + dbtype + " val, Action<" + dbtype + "> ret)";
                 }
                 if (conn.content == "Del")
                 {

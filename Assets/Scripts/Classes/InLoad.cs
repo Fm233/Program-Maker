@@ -7,10 +7,12 @@ using UnityEngine.UI;
 public class InLoad : MonoBehaviour
 {
     public InputField pname;
+    public InputField pdir;
     private void Start()
     {
         Config config = JsonLoader.Load<Config>("", "config"); // NC
         pname.text = config.projectName;
+        pdir.text = config.projectDir;
         Load();
     }
     public void Load()

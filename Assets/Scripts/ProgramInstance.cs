@@ -50,7 +50,7 @@ public class ProgramInstance : ProgramClass
     }
     string ConvertInterfaces()
     {
-        string result = "MonoBehaviour";
+        string result = " : MonoBehaviour";
         for (int i = 0; i < interfaces.Count; i++)
         {
             ProgramInterface a = interfaces[i];

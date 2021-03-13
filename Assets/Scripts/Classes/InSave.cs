@@ -10,6 +10,7 @@ public class InSave : MonoBehaviour
     const double SAVE_TIME = 1;
     public InputField pname;
     public InputField builds;
+    public InputField pdir;
     public Transform canvas;
     //Stopwatch saveTimer = new Stopwatch();
 
@@ -32,7 +33,7 @@ public class InSave : MonoBehaviour
 
     public void Save()
     {
-        JsonLoader.Save("", "config", new Config(pname.text)); // NC
+        JsonLoader.Save("", "config", new Config(pname.text, pdir.text)); // NC
         save(new SaveInf(pname.text, canvas.transform.position, int.Parse(builds.text)));
     }
 

@@ -27,11 +27,19 @@ public class ProgramClass : IProgram
 
     public virtual bool IsIMB()
     {
+        if (className.StartsWith("In") || className.StartsWith("Out"))
+        {
+            return false;
+        }
         return true;
     }
 
     public virtual bool NeedMBInstantiate()
     {
+        if (className.StartsWith("In") || className.StartsWith("Out"))
+        {
+            return true;
+        }
         return false;
     }
 
@@ -47,7 +55,7 @@ public class ProgramClass : IProgram
 
     public virtual void InitContent(ref List<string> p)
     {
-        p.Add("public class " + className + " : IMB");
+        p.Add("public class " + className + " : " + GetInterfaceName());
         p.Add("{");
         foreach (ProgramInterface programInterface in interfaces)
         {
@@ -74,6 +82,15 @@ public class ProgramClass : IProgram
             }
         }
         p.Add("}");
+    }
+
+    string GetInterfaceName()
+    {
+        if (className.StartsWith("In") || className.StartsWith("Out"))
+        {
+            return "MonoBehaviour";
+        }
+        return "IMB";
     }
 
     /*
