@@ -50,7 +50,19 @@ public class ProgramClass : IProgram
 
     public void AddInterface(ProgramInterface programInterface)
     {
-        interfaces.Add(programInterface);
+        bool overlap = false;
+        foreach (ProgramInterface exist in interfaces)
+        {
+            if (exist.param == programInterface.param && exist.isReceiver == programInterface.isReceiver)
+            {
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap)
+        {
+            interfaces.Add(programInterface);
+        }
     }
 
     public virtual void InitContent(ref List<string> p)

@@ -25,12 +25,15 @@ public class ProgramEditorClass : IProgram
         p.Add("    [MenuItem(\"InitMan/Init\")]");
         p.Add("    public static void Init()");
         p.Add("    {");
+
+        p.Add("        // Create classes");
         p.Add("        GameObject mainObject = new GameObject();");
         p.Add("        mainObject.name = \"Main\";");
         p.Add("        Main main = mainObject.AddComponent<Main>();");
         p.Add("        GameObject updater = new GameObject();");
         p.Add("        updater.name = \"Updater\";");
         p.Add("        main.updater = updater.AddComponent<Updater>();");
+        List<ProgramClassDB> factories = new List<ProgramClassDB>();
         foreach (ProgramClass c in featuredClasses)
         {
             string objName = c.insName;
@@ -42,12 +45,21 @@ public class ProgramEditorClass : IProgram
                 ProgramClassDB db = (ProgramClassDB)c;
                 if (db.t == TypeDB.FC)
                 {
-                    foreach (ProgramClass cls in db.GetReceiveClasses())
-                    {
-                        string clobj = cls.insName;
-                        p.Add("        main." + objName + "." + clobj + " = main." + clobj + ";");
-                    }
+                    // Allocate factory
+                    factories.Add(db);
                 }
+            }
+        }
+
+        p.Add("        ");
+        p.Add("        // Link factories");
+        foreach (ProgramClassDB fac in factories)
+        {
+            string objName = fac.insName;
+            foreach (ProgramClass cls in fac.GetReceiveClasses())
+            {
+                string clobj = cls.insName;
+                p.Add("        main." + objName + "." + clobj + " = main." + clobj + ";");
             }
         }
         p.Add("    }");

@@ -412,6 +412,10 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                     }
                 }
             }
+            if (content.Length == 0)
+            {
+                return "null";
+            }
             content = content.Substring(0, content.Length - 2);
             return content;
         }
@@ -420,7 +424,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
 
     void FullParseBracket(ref string stype, string content, string nodename)
     {
-        if (content.EndsWith(")"))
+        if (content.EndsWith(")")) // TODO Level(), Latency() bug
         {
             int st = content.IndexOf("(");
             stype = content.Substring(0, st);
@@ -479,36 +483,43 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
             int bra1start = 0;
             int bra1end = 0;
             int bra1name = 0;
-            for (int i = 0; i < content.Length; i++)
+            bool flag = true;
+            while (flag)
             {
-                if (content[i] == '(')
+                flag = false;
+                for (int i = 0; i < content.Length; i++)
                 {
-                    if (level == 0)
+                    if (content[i] == '(')
                     {
-                        bra1start = i;
-                    }
-                    level++;
-                }
-                if (content[i] == ')')
-                {
-                    level--;
-                    if (level == 0)
-                    {
-                        bra1end = i;
-                        for (int j = bra1start; j > -1; j--)
+                        if (level == 0)
                         {
-                            if (content[j] == ' ')
-                            {
-                                bra1name = j + 1;
-                                break;
-                            }
-                            if (j == 0)
-                            {
-                                bra1name = 0;
-                            }
+                            bra1start = i;
                         }
-                        ParseBracket(content.Substring(bra1name, bra1start - bra1name), content.Substring(bra1start + 1, bra1end - bra1start - 1));
-                        content = content.Substring(0, bra1start) + content.Substring(bra1end + 1);
+                        level++;
+                    }
+                    if (content[i] == ')')
+                    {
+                        level--;
+                        if (level == 0)
+                        {
+                            bra1end = i;
+                            for (int j = bra1start; j > -1; j--)
+                            {
+                                if (content[j] == ' ')
+                                {
+                                    bra1name = j + 1;
+                                    break;
+                                }
+                                if (j == 0)
+                                {
+                                    bra1name = 0;
+                                }
+                            }
+                            ParseBracket(content.Substring(bra1name, bra1start - bra1name), content.Substring(bra1start + 1, bra1end - bra1start - 1));
+                            content = content.Substring(0, bra1start) + content.Substring(bra1end + 1);
+                            flag = true;
+                            break;
+                        }
                     }
                 }
             }
