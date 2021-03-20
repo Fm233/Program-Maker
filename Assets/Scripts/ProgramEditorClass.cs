@@ -56,7 +56,7 @@ public class ProgramEditorClass : IProgram
         foreach (ProgramClassDB fac in factories)
         {
             string objName = fac.insName;
-            foreach (ProgramClass cls in fac.GetReceiveClasses())
+            foreach (ProgramClass cls in fac.GetNonInstanceClasses())
             {
                 string clobj = cls.insName;
                 p.Add("        main." + objName + "." + clobj + " = main." + clobj + ";");

@@ -71,7 +71,10 @@ public static class ProgramSaver
                         }
                         if (!bypass)
                         {
-                            filtered.Add(c);
+                            if (c.Trim().Length > 0 || filtered[filtered.Count - 1].Trim().Length > 0)
+                            {
+                                filtered.Add(c);
+                            }
                         }
                         if (c == "{")
                         {
@@ -84,7 +87,10 @@ public static class ProgramSaver
                                 }
                                 if (flag)
                                 {
-                                    filtered.Add(o);
+                                    if (o.Trim().Length > 0 || filtered[filtered.Count - 1].Trim().Length > 0)
+                                    {
+                                        filtered.Add(o);
+                                    }
                                 }
                                 if (o == "{")
                                 {
@@ -110,9 +116,13 @@ public static class ProgramSaver
         programClass.InitContent(ref program);
         OverwriteType overwrite = OverwriteType.APPEND;
         string className = programClass.className;
-        if (className.StartsWith("Fac") || className.StartsWith("DS") || className.StartsWith("DB"))
+        if (className.StartsWith("DS") || className.StartsWith("DB"))
         {
             overwrite = OverwriteType.NO;
+        }
+        if (className.StartsWith("Fac"))
+        {
+            overwrite = OverwriteType.OVERWRITE;
         }
         SaveProgram(root, className, program, overwrite);
     }

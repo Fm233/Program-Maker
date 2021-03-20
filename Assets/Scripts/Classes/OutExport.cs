@@ -259,25 +259,23 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                         }
                     }
                     bool connected = false;
-                    if (aname.StartsWith("Ins"))
+                    bool aIsIns = aname.StartsWith("Ins");
+                    bool bIsIns = bname.StartsWith("Ins");
+                    if (aIsIns || bIsIns)
                     {
                         foreach (ProgramClass c in classes)
                         {
                             if (c is ProgramClassDB)
                             {
                                 ProgramClassDB db = (ProgramClassDB)c;
-                                if (db.cname == aname)
+                                if (db.cname == (aIsIns ? aname : bname))
                                 {
-                                    db.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb));
+                                    db.AddConnection(sender, receiver, GetClass(nodea), GetClass(nodeb), aIsIns);
                                     connected = true;
                                     break;
                                 }
                             }
                         }
-                    }
-                    if (bname.StartsWith("Ins"))
-                    {
-                        connected = true;
                     }
                     if (!connected)
                     {

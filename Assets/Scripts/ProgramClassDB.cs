@@ -9,6 +9,7 @@ public class ProgramClassDB : ProgramClass
     List<ProgramInterface> receiveInterfaces = new List<ProgramInterface>();
     List<ProgramClass> sendClasses = new List<ProgramClass>();
     List<ProgramClass> receiveClasses = new List<ProgramClass>();
+    List<bool> senderIsInstanceFlags = new List<bool>();
 
     public TypeDB t;
 
@@ -34,9 +35,21 @@ public class ProgramClassDB : ProgramClass
         return t == TypeDB.FC;
     }
 
-    public List<ProgramClass> GetReceiveClasses()
+    public List<ProgramClass> GetNonInstanceClasses()
     {
-        return receiveClasses;
+        List<ProgramClass> nics = new List<ProgramClass>();
+        for (int i = 0; i < receiveClasses.Count; i++)
+        {
+            if (senderIsInstanceFlags[i])
+            {
+                nics.Add(receiveClasses[i]);
+            }
+            else
+            {
+                nics.Add(sendClasses[i]);
+            }
+        }
+        return nics;
     }
 
     public ProgramClassDB(string name, TypeDB t) : base(name)
@@ -47,12 +60,14 @@ public class ProgramClassDB : ProgramClass
     public void AddConnection(ProgramInterface sendInterface,
                               ProgramInterface receiveInterface,
                               ProgramClass sendClass,
-                              ProgramClass receiveClass)
+                              ProgramClass receiveClass,
+                              bool senderIsInstance = true)
     {
         sendInterfaces.Add(sendInterface);
         receiveInterfaces.Add(receiveInterface);
         sendClasses.Add(sendClass);
         receiveClasses.Add(receiveClass);
+        senderIsInstanceFlags.Add(senderIsInstance);
     }
 
     public override void InitContent(ref List<string> p)
@@ -139,9 +154,10 @@ public class ProgramClassDB : ProgramClass
             p.Add("{");
             p.Add("    List<" + cname + "> elements = new List<" + cname + ">();");
             p.Add("    public GameObject prefab;");
-            foreach (ProgramClass recv in receiveClasses)
+            for (int i = 0; i < receiveClasses.Count; i++)
             {
-                p.Add("    public " + recv.className + " " + recv.insName + ";");
+                ProgramClass nonInstanceClass = senderIsInstanceFlags[i] ? receiveClasses[i] : sendClasses[i];
+                p.Add("    public " + nonInstanceClass.className + " " + nonInstanceClass.insName + ";");
             }
             foreach (ProgramInterface programInterface in interfaces)
             {
@@ -184,9 +200,18 @@ public class ProgramClassDB : ProgramClass
                         content.Add("        elements.Add(comp);");
                         for (int i = 0; i < sendInterfaces.Count; i++)
                         {
-                            string rcname = receiveClasses[i].insName;
-                            string param = Util.ToBigCamel(sendInterfaces[i].param);
-                            content.Add("        comp." + sendInterfaces[i].param + "Action += " + rcname + ".Receive" + param + ";");
+                            if (senderIsInstanceFlags[i])
+                            {
+                                string rcname = receiveClasses[i].insName;
+                                string param = Util.ToBigCamel(sendInterfaces[i].param);
+                                content.Add("        comp." + sendInterfaces[i].param + "Action += " + rcname + ".Receive" + param + ";");
+                            }
+                            else
+                            {
+                                string scname = sendClasses[i].insName;
+                                string param = Util.ToBigCamel(sendInterfaces[i].param);
+                                content.Add("        " + scname + "." + sendInterfaces[i].param + "Action += comp.Receive" + param + ";");
+                            }
                         }
                         content.Add("        " + programInterface.param + ".ret(comp);");
                     }
