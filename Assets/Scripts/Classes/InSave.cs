@@ -30,6 +30,10 @@ public class InSave : MonoBehaviour
             Save();
         }
     }
+    private void OnApplicationQuit()
+    {
+        Save();
+    }
 
     public void Save()
     {

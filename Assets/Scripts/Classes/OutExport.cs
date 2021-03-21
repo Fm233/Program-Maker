@@ -338,7 +338,7 @@ public class OutExport : MonoBehaviour, IProExportToOutExportReceiver
                 }
                 if (conn.content == "Crt")
                 {
-                    return "ModelCrt" + dbtype + "(" + dbtype + " val, Action<" + dbtype + "> ret)";
+                    return "ModelCrt" + dbtype + "(Action<" + dbtype + "> ret)";
                 }
                 if (conn.content == "Del")
                 {
